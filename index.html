@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratori de descomposició</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --text:#172033;
+    --muted:#687089;
+    --accent:#315efb;
+    --accent2:#eef2ff;
+    --ok:#0b8f55;
+    --warn:#cc7a00;
+    --danger:#b42318;
+    --border:#dfe4ee;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    padding:20px 24px 10px;
+    max-width:1200px;
+    margin:auto;
+  }
+  h1{margin:0 0 6px;font-size:clamp(28px,4vw,48px)}
+  .sub{color:var(--muted);font-size:clamp(15px,2vw,20px)}
+  main{
+    max-width:1200px;
+    margin:auto;
+    padding:14px 24px 28px;
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:18px;
+  }
+  .panel,.stage{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 8px 22px rgba(20,30,60,.07);
+  }
+  .panel{padding:16px}
+  .panel h2{font-size:18px;margin:0 0 12px}
+  .activity-btn{
+    width:100%;
+    padding:12px 14px;
+    margin:6px 0;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    text-align:left;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .activity-btn:hover{background:var(--accent2)}
+  .activity-btn.active{
+    background:var(--accent);
+    color:white;
+    border-color:var(--accent);
+  }
+  .controls{
+    margin-top:16px;
+    padding-top:12px;
+    border-top:1px solid var(--border);
+  }
+  label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+  select,input{
+    width:100%;
+    padding:10px;
+    font-size:16px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:white;
+  }
+  .stage{
+    padding:24px;
+    min-height:580px;
+    display:flex;
+    flex-direction:column;
+  }
+  .toprow{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .badge{
+    display:inline-block;
+    padding:7px 10px;
+    border-radius:999px;
+    background:var(--accent2);
+    color:var(--accent);
+    font-weight:700;
+  }
+  .timer{
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(30px,5vw,54px);
+    font-weight:800;
+    min-width:140px;
+    text-align:right;
+  }
+  .timer.warn{color:var(--warn)}
+  .timer.danger{color:var(--danger)}
+  .prompt{
+    margin:26px 0 12px;
+    font-size:clamp(28px,5vw,56px);
+    line-height:1.12;
+    font-weight:800;
+  }
+  .question{
+    font-size:clamp(18px,2.5vw,28px);
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .answer{
+    margin-top:16px;
+    padding:18px;
+    border-radius:14px;
+    background:#f0fbf5;
+    border:1px solid #bfe7d0;
+    font-size:clamp(20px,3vw,34px);
+    display:none;
+  }
+  .answer.show{display:block}
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:auto;
+    padding-top:24px;
+  }
+  button.action{
+    border:none;
+    border-radius:12px;
+    padding:13px 17px;
+    font-size:17px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .primary{background:var(--accent);color:white}
+  .secondary{background:#edf0f6;color:var(--text)}
+  .success{background:var(--ok);color:white}
+  .dangerbtn{background:#feeceb;color:var(--danger)}
+  .teacher-note{
+    margin-top:16px;
+    padding:14px;
+    border-radius:12px;
+    border:1px dashed var(--border);
+    color:var(--muted);
+    font-size:14px;
+  }
+  @media (max-width:850px){
+    main{grid-template-columns:1fr}
+    .panel{order:2}
+    .stage{min-height:500px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Laboratori de descomposició</h1>
+  <div class="sub">Reptes ràpids per a pissarretes · cicle mitjà</div>
+</header>
+
+<main>
+  <aside class="panel">
+    <h2>Escull l'activitat</h2>
+    <button class="activity-btn active" data-type="canon">1. Descomposició canònica</button>
+    <button class="activity-btn" data-type="multi">2. Dues descomposicions</button>
+    <button class="activity-btn" data-type="forbidden">3. Peça prohibida</button>
+    <button class="activity-btn" data-type="complete">4. Completa la descomposició</button>
+    <button class="activity-btn" data-type="correct">5. És correcte?</button>
+    <button class="activity-btn" data-type="exchange">6. Intercanvi equivalent</button>
+
+    <div class="controls">
+      <label for="level">Dificultat</label>
+      <select id="level">
+        <option value="1">Nivell 1 · fins a 999</option>
+        <option value="2" selected>Nivell 2 · fins a 1.999</option>
+        <option value="3">Nivell 3 · fins a 4.999 i zeros interns</option>
+      </select>
+    </div>
+
+    <div class="controls">
+      <label for="seconds">Temps per repte (segons)</label>
+      <input id="seconds" type="number" min="5" max="180" step="5" value="30">
+    </div>
+
+    <div class="teacher-note">
+      Suggeriment: demana sempre que, després d'escriure, un alumne expliqui oralment què representa cada part.
+    </div>
+  </aside>
+
+  <section class="stage">
+    <div class="toprow">
+      <div class="badge" id="activityName">Descomposició canònica</div>
+      <div id="timer" class="timer">00:30</div>
+    </div>
+
+    <div id="prompt" class="prompt">Descompon 1.035</div>
+    <div id="question" class="question">Escriu el nombre com una suma de valors posicionals.</div>
+    <div id="answer" class="answer"></div>
+
+    <div class="actions">
+      <button id="newBtn" class="action primary">Nou repte</button>
+      <button id="startBtn" class="action secondary">Inicia cronòmetre</button>
+      <button id="showBtn" class="action success">Mostra resposta</button>
+      <button id="resetBtn" class="action dangerbtn">Reinicia temps</button>
+    </div>
+  </section>
+</main>
+
+<script>
+let activity = "canon";
+let current = null;
+let interval = null;
+let remaining = 30;
+
+const names = {
+  canon:"Descomposició canònica",
+  multi:"Dues descomposicions",
+  forbidden:"Peça prohibida",
+  complete:"Completa la descomposició",
+  correct:"És correcte?",
+  exchange:"Intercanvi equivalent"
+};
+
+const promptEl = document.getElementById("prompt");
+const questionEl = document.getElementById("question");
+const answerEl = document.getElementById("answer");
+const timerEl = document.getElementById("timer");
+const activityName = document.getElementById("activityName");
+const secondsInput = document.getElementById("seconds");
+const levelSelect = document.getElementById("level");
+
+function fmt(n){ return n.toLocaleString("ca-ES"); }
+
+function digits(n){
+  return {
+    u:n%10,
+    d:Math.floor(n/10)%10,
+    c:Math.floor(n/100)%10,
+    m:Math.floor(n/1000)%10
+  };
+}
+
+function canonParts(n){
+  const d=digits(n), a=[];
+  if(d.m) a.push(d.m*1000);
+  if(d.c) a.push(d.c*100);
+  if(d.d) a.push(d.d*10);
+  if(d.u) a.push(d.u);
+  return a.length ? a.map(fmt).join(" + ") : "0";
+}
+
+function randomNumber(){
+  const level=+levelSelect.value;
+  let min=100, max=999;
+  if(level===2){ min=100; max=1999; }
+  if(level===3){ min=100; max=4999; }
+  let n=Math.floor(Math.random()*(max-min+1))+min;
+  if(level>=2 && Math.random()<0.45){
+    // força algun zero interior
+    const d=digits(n);
+    if(n>=1000 && Math.random()<0.5){
+      n = d.m*1000 + d.c*100 + d.u;
+    } else {
+      n = Math.floor(n/100)*100 + (n%10);
+    }
+  }
+  return Math.max(10,n);
+}
+
+function altDecompositions(n){
+  const d=digits(n);
+  const options=[];
+  // Canviar 1 D per 10 U
+  if(d.d>0){
+    const hundreds = Math.floor(n/100)*100;
+    const tens = (d.d-1)*10;
+    const units = d.u+10;
+    const arr=[];
+    if(hundreds) arr.push(hundreds);
+    if(tens) arr.push(tens);
+    arr.push(units);
+    options.push(arr.map(fmt).join(" + "));
+  }
+  // Canviar 1 C per 10 D
+  if(d.c>0){
+    const thousands = Math.floor(n/1000)*1000;
+    const hundreds=(d.c-1)*100;
+    const tens=d.d*10+100;
+    const arr=[];
+    if(thousands) arr.push(thousands);
+    if(hundreds) arr.push(hundreds);
+    if(tens) arr.push(tens);
+    if(d.u) arr.push(d.u);
+    options.push(arr.map(fmt).join(" + "));
+  }
+  // Canviar 1 M per 10 C
+  if(d.m>0){
+    const thousands=(d.m-1)*1000;
+    const hundreds=d.c*100+1000;
+    const arr=[];
+    if(thousands) arr.push(thousands);
+    if(hundreds) arr.push(hundreds);
+    if(d.d) arr.push(d.d*10);
+    if(d.u) arr.push(d.u);
+    options.push(arr.map(fmt).join(" + "));
+  }
+  return [...new Set(options)];
+}
+
+function generate(){
+  stopTimer();
+  resetTimer();
+  answerEl.classList.remove("show");
+  const n=randomNumber();
+  current={n};
+  activityName.textContent=names[activity];
+
+  if(activity==="canon"){
+    promptEl.textContent=`Descompon ${fmt(n)}`;
+    questionEl.textContent="Escriu-lo com una suma de valors posicionals.";
+    answerEl.textContent=`${fmt(n)} = ${canonParts(n)}`;
+  }
+
+  if(activity==="multi"){
+    let alts=altDecompositions(n);
+    if(alts.length===0) return generate();
+    promptEl.textContent=`Descompon ${fmt(n)} de dues maneres`;
+    questionEl.textContent="Una pot ser la descomposició habitual; l'altra ha de conservar el valor però canviar alguna agrupació.";
+    answerEl.innerHTML=`Una possibilitat:<br>${fmt(n)} = ${canonParts(n)}<br>${fmt(n)} = ${alts[0]}`;
+  }
+
+  if(activity==="forbidden"){
+    const d=digits(n);
+    const possible=[];
+    if(d.m>0) possible.push("milers");
+    if(d.c>0) possible.push("centenes");
+    if(d.d>0) possible.push("desenes");
+    if(possible.length===0) return generate();
+    const forbidden=possible[Math.floor(Math.random()*possible.length)];
+    current.forbidden=forbidden;
+    promptEl.textContent=`Construeix/descompon ${fmt(n)} sense ${forbidden}`;
+    questionEl.textContent="El valor total ha de continuar sent exactament el mateix.";
+    let ans="";
+    if(forbidden==="desenes"){
+      const th=Math.floor(n/1000)*1000;
+      const h=Math.floor(n/100)%10*100;
+      const units=(Math.floor(n/10)%10)*10+(n%10);
+      ans=[th,h,units].filter(x=>x).map(fmt).join(" + ");
+    } else if(forbidden==="centenes"){
+      const th=Math.floor(n/1000)*1000;
+      const rest=n%1000;
+      const tens=Math.floor(rest/10)*10;
+      const units=rest%10;
+      ans=[th,tens,units].filter(x=>x).map(fmt).join(" + ");
+    } else {
+      ans=canonParts(n); // per milers, expressa com centenes
+      const hundreds=Math.floor(n/100)*100;
+      const tens=(Math.floor(n/10)%10)*10;
+      const units=n%10;
+      ans=[hundreds,tens,units].filter(x=>x).map(fmt).join(" + ");
+    }
+    answerEl.textContent=`Exemple possible: ${fmt(n)} = ${ans}`;
+  }
+
+  if(activity==="complete"){
+    const d=digits(n);
+    let known=0, missing=0;
+    if(d.c>0){
+      known=d.m*1000 + d.c*100;
+      missing=n-known;
+    } else {
+      known=d.m*1000;
+      missing=n-known;
+    }
+    if(!known || !missing) return generate();
+    promptEl.textContent=`${fmt(n)} = ${fmt(known)} + ____`;
+    questionEl.textContent="Quin valor falta perquè la descomposició sigui correcta?";
+    answerEl.textContent=`Falta ${fmt(missing)}.`;
+  }
+
+  if(activity==="correct"){
+    const makeWrong=Math.random()<0.65;
+    const canonical=canonParts(n);
+    let shown=canonical;
+    let truth=true;
+    if(makeWrong){
+      const parts=canonical.split(" + ");
+      if(parts.length<2) return generate();
+      const i=Math.floor(Math.random()*parts.length);
+      const val=Number(parts[i].replace(/\./g,""));
+      const delta=val>=100 ? 100 : 10;
+      parts[i]=fmt(val+delta);
+      shown=parts.join(" + ");
+      truth=false;
+    }
+    current.truth=truth;
+    promptEl.textContent=`${fmt(n)} = ${shown}`;
+    questionEl.textContent="És correcte? Escriu SÍ o NO i prepara una justificació.";
+    answerEl.textContent=truth ? "Sí. La suma conserva exactament el valor del nombre." : `No. Una descomposició correcta és: ${fmt(n)} = ${canonical}`;
+  }
+
+  if(activity==="exchange"){
+    const d=digits(n);
+    let order=null;
+    if(d.d>0) order="D→U";
+    else if(d.c>0) order="C→D";
+    else if(d.m>0) order="M→C";
+    else return generate();
+
+    if(order==="D→U"){
+      promptEl.textContent=`${fmt(n)}: canvia 1 desena per unitats`;
+      questionEl.textContent="Escriu com queda el nombre per ordres després de l'intercanvi.";
+      answerEl.textContent=`${d.m} UM, ${d.c} C, ${d.d-1} D i ${d.u+10} U. El nombre continua sent ${fmt(n)}.`;
+    } else if(order==="C→D"){
+      promptEl.textContent=`${fmt(n)}: canvia 1 centena per desenes`;
+      questionEl.textContent="Escriu com queda el nombre per ordres després de l'intercanvi.";
+      answerEl.textContent=`${d.m} UM, ${d.c-1} C, ${d.d+10} D i ${d.u} U. El nombre continua sent ${fmt(n)}.`;
+    } else {
+      promptEl.textContent=`${fmt(n)}: canvia 1 miler per centenes`;
+      questionEl.textContent="Escriu com queda el nombre per ordres després de l'intercanvi.";
+      answerEl.textContent=`${d.m-1} UM, ${d.c+10} C, ${d.d} D i ${d.u} U. El nombre continua sent ${fmt(n)}.`;
+    }
+  }
+}
+
+function updateTimer(){
+  const m=String(Math.floor(remaining/60)).padStart(2,"0");
+  const s=String(remaining%60).padStart(2,"0");
+  timerEl.textContent=`${m}:${s}`;
+  timerEl.classList.toggle("warn",remaining<=10 && remaining>5);
+  timerEl.classList.toggle("danger",remaining<=5);
+}
+
+function resetTimer(){
+  remaining=Math.max(5,Math.min(180,+secondsInput.value || 30));
+  updateTimer();
+}
+
+function stopTimer(){
+  if(interval){clearInterval(interval); interval=null;}
+}
+
+function startTimer(){
+  stopTimer();
+  if(remaining<=0) resetTimer();
+  interval=setInterval(()=>{
+    remaining--;
+    updateTimer();
+    if(remaining<=0){
+      stopTimer();
+      answerEl.classList.add("show");
+    }
+  },1000);
+}
+
+document.querySelectorAll(".activity-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".activity-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activity=btn.dataset.type;
+    generate();
+  });
+});
+
+document.getElementById("newBtn").addEventListener("click",generate);
+document.getElementById("startBtn").addEventListener("click",startTimer);
+document.getElementById("showBtn").addEventListener("click",()=>answerEl.classList.toggle("show"));
+document.getElementById("resetBtn").addEventListener("click",()=>{stopTimer();resetTimer();});
+secondsInput.addEventListener("change",()=>{stopTimer();resetTimer();});
+levelSelect.addEventListener("change",generate);
+
+generate();
+</script>
+</body>
+</html>
